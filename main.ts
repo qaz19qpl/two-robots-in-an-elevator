@@ -2,7 +2,7 @@
 // says to another in an elevator. A tiny Node 22 program, standard library
 // only, that writes the line to /output/entry.txt. The text is the same on
 // every run: no network, no clock, no randomness.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // One line, written fresh for this bounty: a robot doing what humans do in
 // elevators — pretending to be busy with its phone — and blaming its firmware.
@@ -19,6 +19,12 @@ if (codePoints < 1 || codePoints > 200 || LINE.trim().length === 0) {
 function writeEntry(): void {
   mkdirSync("/output", { recursive: true });
   writeFileSync("/output/entry.txt", LINE, "utf8");
+  // Read back what was written and refuse to report success unless the
+  // file on disk is byte-for-byte the line the gate just approved.
+  const written = readFileSync("/output/entry.txt", "utf8");
+  if (written !== LINE) {
+    throw new Error("entry.txt on disk differs from the approved line");
+  }
 }
 
 writeEntry();
